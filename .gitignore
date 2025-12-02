@@ -1,0 +1,15 @@
+# 1. Bỏ qua môi trường ảo (Rất quan trọng, file này rất nặng)
+venv/
+env/
+
+# 2. Bỏ qua file biên dịch Python (File rác sinh ra khi chạy)
+__pycache__/
+*.pyc
+
+# 3. Bỏ qua Cơ sở dữ liệu (Thường không đẩy DB thật lên git, chỉ đẩy cấu trúc)
+instance/
+database.db
+*.sqlite3
+
+# 4. Bỏ qua các file môi trường hệ thống (nếu có)
+.DS_Store

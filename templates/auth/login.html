@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Tủ lạnh thông minh</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        input[type=submit] { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .alert { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-info { background-color: #cce5ff; color: #004085; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Đăng nhập</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <label for="username">Tên đăng nhập:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="submit" value="Đăng nhập">
+    </form>
+    
+    <p style="text-align: center;">
+        Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký tại đây</a>
+    </p>
+</body>
+</html>
