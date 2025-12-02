@@ -24,7 +24,7 @@ class Food(db.Model):
     quantity = db.Column(db.Float, nullable=False)       # Số lượng
     unit = db.Column(db.String(20), nullable=False)      # Đơn vị (kg, quả, hộp...)
     expiration_date = db.Column(db.Date, nullable=False) # Ngày hết hạn
-    storage_location = db.Column(db.String(50), default='Ngăn mát') # Vị trí
+    location = db.Column(db.String(50), default='Ngăn mát') # Vị trí
     added_at = db.Column(db.DateTime, default=datetime.utcnow)      # Ngày thêm vào
     
     # Khóa ngoại: Liên kết với bảng User

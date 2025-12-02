@@ -1,8 +1,8 @@
-# File: app.py
+
 from flask import Flask, render_template, url_for, flash, redirect, request, session
 from extensions import db, bcrypt  # <-- Import từ file extensions
-from models import User # <-- Import Model User (bây giờ đã an toàn)
-
+from models import User, Food # <-- Import Model User (bây giờ đã an toàn)
+from datetime import datetime
 app = Flask(__name__)
 
 # --- Cấu hình ---
@@ -23,9 +23,15 @@ bcrypt.init_app(app)
 def home():
     if 'user_id' in session:
         name = session.get('username')
-        return f"<h1>Xin chào, {name}!</h1> <p>Bạn đã đăng nhập.</p> <a href='/logout'>Đăng xuất</a>"
+        # Thêm cái link dẫn đến /add_food
+        return f"""
+        <h1>Xin chào, {name}!</h1>
+        <p>Đây là tủ lạnh của bạn.</p>
+        <a href='/add_food' style='font-size: 20px; font-weight: bold;'>[+] Thêm thực phẩm mới</a>
+        <br><br>
+        <a href='/logout'>Đăng xuất</a>
+        """
     return "<h1>Hệ thống Tủ lạnh thông minh</h1> <p><a href='/login'>Đăng nhập</a> hoặc <a href='/register'>Đăng ký</a></p>"
-
 # 2. ĐĂNG KÝ
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -87,6 +93,52 @@ def logout():
     session.pop('username', None)
     flash('Đã đăng xuất.', 'info')
     return redirect(url_for('login'))
+# -----------------------------------------------------------
+# CÁC ROUTES QUẢN LÝ THỰC PHẨM (CRUD)
+# -----------------------------------------------------------
+
+# 1. THÊM THỰC PHẨM MỚI
+@app.route("/add_food", methods=['GET', 'POST'])
+def add_food():
+    # Kiểm tra đăng nhập (Bắt buộc)
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để thêm thực phẩm.', 'danger')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # 1. Lấy dữ liệu từ form
+        name = request.form.get('name')
+        quantity = request.form.get('quantity')
+        unit = request.form.get('unit')
+        location = request.form.get('location')
+        date_str = request.form.get('expiration_date') # Dạng chuỗi 'YYYY-MM-DD'
+        
+        # 2. Xử lý dữ liệu (Chuyển chuỗi ngày thành đối tượng Python Date)
+        # HTML trả về '2025-11-20', ta cần chuyển nó để lưu vào DB
+        expiration_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        # 3. Tạo đối tượng Food mới
+        new_food = Food(
+            name=name,
+            quantity=float(quantity), # Chuyển sang số thực
+            unit=unit,
+            location=location,
+            expiration_date=expiration_date,
+            user_id=session['user_id'] # Gán cho người dùng hiện tại
+        )
+        
+        # 4. Lưu vào CSDL
+        try:
+            db.session.add(new_food)
+            db.session.commit()
+            flash(f'Đã thêm "{name}" vào tủ lạnh!', 'success')
+            return redirect(url_for('home')) # Quay về trang chủ để xem danh sách
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Lỗi khi thêm thực phẩm: {e}', 'danger')
+
+    # Hiển thị form thêm
+    return render_template('food/add_food.html', title='Thêm thực phẩm')
 
 # --- Chạy App ---
 if __name__ == '__main__':
