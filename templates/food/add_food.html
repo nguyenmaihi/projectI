@@ -24,8 +24,8 @@
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
                 <label for="quantity">Số lượng:</label>
-                <input type="number" id="quantity" name="quantity" min="0" step="1" required placeholder="Nhập số lượng">
-                <div id="quantity-hint" class="hint">Nhập số nguyên (1, 2, 3...)</div>
+                <input type="number" id="quantity" name="quantity" required placeholder="Nhập số lượng">
+                <div id="quantity-hint" class="hint"></div>
             </div>
             <div style="flex: 1;">
                 <label for="unit">Đơn vị:</label>
@@ -78,6 +78,7 @@
             // 4. Kiểm tra và thay đổi thuộc tính của ô nhập
             if (integerUnits.includes(selectedUnit)) {
                 // Nếu là đồ đếm được: Bắt buộc nhập số nguyên (step = 1)
+                quantityInput.min = "1";
                 quantityInput.step = "1";
                 quantityInput.placeholder = "VD: 1, 5, 10";
                 hintText.textContent = "Nhập số nguyên (1, 2, 3...)";
@@ -88,6 +89,7 @@
                 }
             } else {
                 // Nếu là Kg, Lít, Gram: Cho phép nhập số lẻ (step = 0.01)
+                quantityInput.min = "0.01";
                 quantityInput.step = "0.01"; // Cho phép nhập lẻ như 0.5, 1.25
                 quantityInput.placeholder = "VD: 0.5, 1.2";
                 hintText.textContent = "Có thể nhập số lẻ (0.5, 1.2...)";

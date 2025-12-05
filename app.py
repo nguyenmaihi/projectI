@@ -2,7 +2,7 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, session
 from extensions import db, bcrypt  # <-- Import từ file extensions
 from models import User, Food # <-- Import Model User (bây giờ đã an toàn)
-from datetime import datetime
+from datetime import datetime, date
 app = Flask(__name__)
 
 # --- Cấu hình ---
@@ -21,17 +21,20 @@ bcrypt.init_app(app)
 # 1. TRANG CHỦ
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        name = session.get('username')
-        # Thêm cái link dẫn đến /add_food
-        return f"""
-        <h1>Xin chào, {name}!</h1>
-        <p>Đây là tủ lạnh của bạn.</p>
-        <a href='/add_food' style='font-size: 20px; font-weight: bold;'>[+] Thêm thực phẩm mới</a>
-        <br><br>
-        <a href='/logout'>Đăng xuất</a>
-        """
-    return "<h1>Hệ thống Tủ lạnh thông minh</h1> <p><a href='/login'>Đăng nhập</a> hoặc <a href='/register'>Đăng ký</a></p>"
+    # 1. Kiểm tra đăng nhập
+    if 'user_id' not in session:
+        return render_template('auth/login.html') # Hoặc trang giới thiệu nếu có
+    
+    # 2. Lấy thông tin user
+    # (Tùy chọn: Lấy tên để hiển thị xin chào)
+    
+    # 3. Lấy danh sách thực phẩm của người dùng đó
+    # Sắp xếp theo ngày hết hạn tăng dần (đồ sắp hết hạn lên đầu)
+    today = date.today()
+    user_foods = Food.query.filter_by(user_id=session['user_id']).order_by(Food.expiration_date.asc()).all()
+    
+    # 4. Gửi dữ liệu sang trang index.html
+    return render_template('index.html', foods=user_foods, today=today)
 # 2. ĐĂNG KÝ
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -139,6 +142,62 @@ def add_food():
 
     # Hiển thị form thêm
     return render_template('food/add_food.html', title='Thêm thực phẩm')
+
+# 2. XÓA THỰC PHẨM
+@app.route('/delete_food/<int:id>')
+def delete_food(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    food_to_delete = Food.query.get_or_404(id)
+    # 3. QUAN TRỌNG: Kiểm tra xem thực phẩm này có đúng là của người đang đăng nhập không?
+    # Tránh trường hợp ông A xóa đồ của ông B bằng cách đoán ID
+    if food_to_delete.user_id != session['user_id']:
+        flash('Bạn không có quyền xóa thực phẩm này!', 'danger')
+        return redirect(url_for('home'))
+    
+    # 4. Xóa và Lưu
+    try:
+        db.session.delete(food_to_delete)
+        db.session.commit()
+        flash('Đã xóa thực phẩm thành công!', 'success')
+    except:
+        flash('Có lỗi xảy ra khi xóa.', 'danger')
+        
+    return redirect(url_for('home'))
+
+# Route Sửa thực phẩm
+@app.route('/edit_food/<int:id>', methods=['GET', 'POST'])
+def edit_food(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    food = Food.query.get_or_404(id)
+    
+    # Kiểm tra quyền sở hữu
+    if food.user_id != session['user_id']:
+        flash('Bạn không có quyền sửa thực phẩm này!', 'danger')
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        # Cập nhật thông tin từ Form vào đối tượng Food cũ
+        food.name = request.form.get('name')
+        food.quantity = float(request.form.get('quantity'))
+        food.unit = request.form.get('unit')
+        food.location = request.form.get('location')
+        
+        # Xử lý ngày tháng
+        date_str = request.form.get('expiration_date')
+        food.expiration_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        
+        try:
+            db.session.commit() # Chỉ cần commit, không cần add lại
+            flash('Cập nhật thành công!', 'success')
+            return redirect(url_for('home'))
+        except:
+            flash('Lỗi khi cập nhật.', 'danger')
+
+    # Nếu là GET: Hiển thị form với dữ liệu cũ
+    return render_template('food/edit_food.html', food=food)
 
 # --- Chạy App ---
 if __name__ == '__main__':
