@@ -1,7 +1,7 @@
 
 from flask import Flask, render_template, url_for, flash, redirect, request, session
 from extensions import db, bcrypt  # <-- Import từ file extensions
-from models import User, Food # <-- Import Model User (bây giờ đã an toàn)
+from models import User, Food, Recipe # <-- Import Model User (bây giờ đã an toàn)
 from datetime import datetime, date
 app = Flask(__name__)
 
@@ -199,6 +199,64 @@ def edit_food(id):
     # Nếu là GET: Hiển thị form với dữ liệu cũ
     return render_template('food/edit_food.html', food=food)
 
+@app.route('/init_recipes')
+def init_recipes():
+    recipes = [
+        Recipe(name="Trứng chiên hành lá", ingredients_list="Trứng gà, Hành lá, Nước mắm", instructions="Đập trứng, cắt hành, đánh tan rồi chiên vàng."),
+        Recipe(name="Canh cà chua trứng", ingredients_list="Trứng gà, Cà chua, Hành lá", instructions="Phi thơm hành, xào cà chua, thêm nước sôi và đổ trứng vào."),
+        Recipe(name="Sữa ngũ cốc", ingredients_list="Sữa tươi, Ngũ cốc", instructions="Cho ngũ cốc vào bát, đổ sữa tươi vào và thưởng thức."),
+        Recipe(name="Bánh mỳ ốp la", ingredients_list="Bánh mỳ, Trứng gà", instructions="Chiên trứng ốp la, ăn kèm với bánh mỳ."),
+        Recipe(name="Salad cà chua xà lách", ingredients_list="Cà chua, Xà lách, Dầu ăn", instructions="Thái lát các nguyên liệu và trộn với dầu giấm."),
+        # Bạn hãy thêm tiếp cho đủ 10-15 món tương tự...
+    ]
+    try:
+        db.session.add_all(recipes)
+        db.session.commit()
+        return "Đã tạo 15 công thức mẫu thành công!"
+    except:
+        return "Dữ liệu đã tồn tại hoặc có lỗi."
+    
+@app.route('/suggest')
+def suggest():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # 1. Lấy thực phẩm trong tủ
+    user_foods = Food.query.filter_by(user_id=session['user_id']).all()
+    
+    # ✅ PHẢI CÓ DÒNG NÀY: Khai báo biến fridge_items
+    fridge_items = [f.name.lower().strip() for f in user_foods]
+
+    # 2. Lấy tất cả công thức
+    all_recipes = Recipe.query.all()
+    suggestions = []
+
+    # 3. Logic Matching
+    for recipe in all_recipes:
+        # Tách chuỗi nguyên liệu trong DB thành danh sách
+        recipe_ingredients = [i.strip().lower() for i in recipe.ingredients_list.split(',')]
+        
+        matches = []
+        for need in recipe_ingredients:
+            # So sánh tương đối: "trứng" có nằm trong "trứng gà" không?
+            if any(item in need or need in item for item in fridge_items):
+                matches.append(need)
+        
+        total_needed = len(recipe_ingredients)
+        if total_needed > 0:
+            score = int((len(matches) / total_needed) * 100)
+            if score > 0:
+                suggestions.append({
+                    'info': recipe,
+                    'score': score,
+                    'matches': matches,
+                    'missing': set(recipe_ingredients) - set(matches)
+                })
+
+    # Sắp xếp theo điểm khớp
+    suggestions.sort(key=lambda x: x['score'], reverse=True)
+
+    return render_template('food/suggest.html', suggestions=suggestions)
 # --- Chạy App ---
 if __name__ == '__main__':
     # Tạo bảng CSDL tự động nếu chưa có (chạy 1 lần đầu)
