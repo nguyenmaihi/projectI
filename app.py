@@ -3,6 +3,7 @@ from flask import Flask, render_template, url_for, flash, redirect, request, ses
 from extensions import db, bcrypt  # <-- Import từ file extensions
 from models import User, Food, Recipe # <-- Import Model User (bây giờ đã an toàn)
 from datetime import datetime, date
+from sqlalchemy import func
 app = Flask(__name__)
 
 # --- Cấu hình ---
@@ -215,7 +216,7 @@ def init_recipes():
         return "Đã tạo 15 công thức mẫu thành công!"
     except:
         return "Dữ liệu đã tồn tại hoặc có lỗi."
-    
+ 
 @app.route('/suggest')
 def suggest():
     if 'user_id' not in session:
@@ -257,6 +258,44 @@ def suggest():
     suggestions.sort(key=lambda x: x['score'], reverse=True)
 
     return render_template('food/suggest.html', suggestions=suggestions)
+
+@app.route('/statistics')
+def statistics():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    uid = session['user_id']
+    today = date.today()
+
+    # 1. Thống kê theo Vị trí (Dùng cho biểu đồ tròn)
+    location_data = db.session.query(Food.location, func.count(Food.id))\
+        .filter_by(user_id=uid).group_by(Food.location).all()
+    
+    # 2. Phân loại thực phẩm theo tình trạng hạn dùng
+    all_foods = Food.query.filter_by(user_id=uid).all()
+    
+    expired_list = [] # Đã quá hạn
+    soon_list = []    # Sắp hết hạn (<= 3 ngày)
+    fresh_list = []   # Còn hạn dài (> 3 ngày)
+
+    for f in all_foods:
+        days_left = (f.expiration_date - today).days
+        if days_left < 0:
+            expired_list.append(f)
+        elif days_left <= 3:
+            soon_list.append(f)
+        else:
+            fresh_list.append(f)
+
+    # Trả dữ liệu về Template
+    return render_template('statistics.html', 
+                           location_labels=[row[0] for row in location_data],
+                           location_values=[row[1] for row in location_data],
+                           status_values=[len(expired_list), len(soon_list), len(fresh_list)],
+                           expired_list=expired_list,
+                           soon_list=soon_list,
+                           fresh_list=fresh_list,
+                           today=today)
 # --- Chạy App ---
 if __name__ == '__main__':
     # Tạo bảng CSDL tự động nếu chưa có (chạy 1 lần đầu)

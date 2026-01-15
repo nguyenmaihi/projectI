@@ -125,8 +125,9 @@
         <i class="fas fa-utensils"></i> <span>Món ăn hôm nay</span>
     </a>
 
-    <a href="#" class="nav-item {% if request.endpoint == 'statistics' %}active{% endif %}">
-        <i class="fas fa-chart-pie"></i> <span>Thống kê</span>
+    <a href="{{ url_for('statistics') }}" 
+    class="nav-item {% if request.endpoint == 'statistics' %}active{% endif %}">
+    <i class="fas fa-chart-pie"></i> <span>Thống kê</span>
     </a>
 
     <a href="#" class="nav-item {% if request.endpoint == 'account' %}active{% endif %}">
