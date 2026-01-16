@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fridge - Quản lý tủ lạnh</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+    /* Trạng thái mặc định của nav-item */
+.nav-item {
+    display: block;
+    padding: 15px 25px;
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: 0.1s;
+    border-left: 4px solid transparent; /* Vạch màu mặc định là trong suốt */
+}
+
+/* Khi di chuột vào HOẶC khi có class .active */
+.nav-item:hover, .nav-item.active {
+    background-color: var(--hover-color);
+    color: white;
+    border-left: 4px solid var(--accent-color); /* Hiện vạch màu xanh dương */
+    padding-left: 20px;
+}
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #2c3e50;
+            --hover-color: #34495e;
+            --accent-color: #3498db;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f6;
+        }
+
+        /* Sidebar bên trái */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: var(--primary-color);
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-bottom: 1px solid #3e5062;
+        }
+
+        .user-info {
+            padding: 20px;
+            background-color: var(--hover-color);
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            flex-grow: 1;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 15px 25px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--hover-color);
+            color: white;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .nav-item i { margin-right: 10px; width: 20px; text-align: center; }
+
+        /* Vùng nội dung bên phải */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar span, .sidebar-header, .user-info { display: none; }
+            .main-content { margin-left: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            🧊 Smart Fridge
+        </div>
+        
+        <div class="user-info">
+            <i class="fas fa-user-circle fa-2x"></i>
+            <span>Xin chào, <strong>{{ session['username'] }}</strong></span>
+        </div>
+
+        <nav class="nav-links">
+    <a href="{{ url_for('home') }}" 
+       class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+        <i class="fas fa-home"></i> <span>Tủ lạnh của tôi</span>
+    </a>
+
+    <a href="{{ url_for('suggest') }}" 
+       class="nav-item {% if request.endpoint == 'suggest' %}active{% endif %}">
+        <i class="fas fa-utensils"></i> <span>Món ăn hôm nay</span>
+    </a>
+
+    <a href="{{ url_for('statistics') }}" 
+    class="nav-item {% if request.endpoint == 'statistics' %}active{% endif %}">
+    <i class="fas fa-chart-pie"></i> <span>Thống kê</span>
+    </a>
+
+    <a href="#" class="nav-item {% if request.endpoint == 'account' %}active{% endif %}">
+        <i class="fas fa-cog"></i> <span>Tài khoản</span>
+    </a>
+</nav>
+
+        <a href="{{ url_for('logout') }}" class="nav-item" style="border-top: 1px solid #3e5062;">
+            <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
+        </a>
+    </div>
+
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>

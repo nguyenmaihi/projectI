@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 0 auto;">
+    <h1><i class="fas fa-chart-line"></i> Phân tích Tủ lạnh</h1>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 40px;">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h2 style="text-align: center;">Tỉ lệ theo vị trí</h2>
+            <canvas id="locationChart"></canvas>
+        </div>
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h2 style="text-align: center;">Tình trạng hạn dùng</h2>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+        
+        <div style="background: #fff; border-top: 5px solid #dc3545; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h4 style="color: #dc3545;"><i class="fas fa-skull-crossbones"></i> Đã quá hạn ({{ expired_list|length }})</h4>
+            <ul style="padding-left: 20px; font-size: 0.9em;">
+                {% for f in expired_list %}
+                    <li style="margin-bottom: 5px;">{{ f.name }} <span style="color: #999;"> - quá hạn {{ (today - f.expiration_date).days }} ngày</span></li>
+                {% else %}
+                    <p style="color: #999;">Không có món nào quá hạn.</p>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div style="background: #fff; border-top: 5px solid #ffc107; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h4 style="color: #ffc107;"><i class="fas fa-exclamation-triangle"></i> Sắp hết hạn ({{ soon_list|length }})</h4>
+            <ul style="padding-left: 20px; font-size: 0.9em;">
+                {% for f in soon_list %}
+                    <li style="margin-bottom: 5px;">{{ f.name }} <span style="color: #666;">- Còn {{ (f.expiration_date - today).days }} ngày</span></li>
+                {% else %}
+                    <p style="color: #999;">Mọi thứ vẫn ổn!</p>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div style="background: #fff; border-top: 5px solid #28a745; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h4 style="color: #28a745;"><i class="fas fa-check-circle"></i> Còn tươi ({{ fresh_list|length }})</h4>
+            <ul style="padding-left: 20px; font-size: 0.9em;">
+                {% for f in fresh_list %}
+                    <li>{{ f.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<div id="chart-data" 
+     data-location-labels='{{ location_labels | tojson }}'
+     data-location-values='{{ location_values | tojson }}'
+     data-status-values='{{ status_values | tojson }}'
+     style="display: none;">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const dataContainer = document.getElementById('chart-data');
+    const locationLabels = JSON.parse(dataContainer.getAttribute('data-location-labels'));
+    const locationValues = JSON.parse(dataContainer.getAttribute('data-location-values'));
+    const statusValues = JSON.parse(dataContainer.getAttribute('data-status-values'));
+
+    new Chart(document.getElementById('locationChart'), {
+        type: 'pie',
+        data: {
+            labels: locationLabels,
+            datasets: [{
+                data: locationValues,
+                backgroundColor: ['#3498db', '#9b59b6', '#e67e22', '#1abc9c']
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Quá hạn', 'Sắp hết hạn', 'Còn tươi'],
+            datasets: [{
+                data: statusValues,
+                backgroundColor: ['#dc3545', '#ffc107', '#28a745']
+            }]
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm thực phẩm</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        input[type=submit] { margin-top: 20px; background-color: #28a745; color: white; border: none; cursor: pointer; padding: 10px; font-size: 16px; }
+        .back-link { display: block; margin-top: 15px; text-align: center; }
+        
+        /* Thêm chút màu sắc cho phần lưu ý */
+        .hint { font-size: 0.85em; color: #666; font-style: italic; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Thêm vào Tủ lạnh 🍎</h2>
+
+    <form method="POST" action="{{ url_for('add_food') }}">
+        <label for="name">Tên thực phẩm:</label>
+        <input type="text" id="name" name="name" placeholder="Ví dụ: Trứng gà, Sữa tươi..." required>
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label for="quantity">Số lượng:</label>
+                <input type="number" id="quantity" name="quantity" required placeholder="Nhập số lượng">
+                <div id="quantity-hint" class="hint"></div>
+            </div>
+            <div style="flex: 1;">
+                <label for="unit">Đơn vị:</label>
+                <select id="unit" name="unit" onchange="updateQuantityInput()">
+                    <option value="Quả">Quả</option>
+                    <option value="Hộp">Hộp</option>
+                    <option value="Cái">Cái</option>
+                    <option value="Chai">Chai</option>
+                    <option value="Gói">Gói</option>
+                    
+                    <option value="Kg">Kg</option>
+                    <option value="Lít">Lít</option>
+                    <option value="Gram">Gram</option>
+                </select>
+            </div>
+        </div>
+
+        <label for="location">Vị trí:</label>
+        <select id="location" name="location">
+            <option value="Ngăn mát">❄️ Ngăn mát</option>
+            <option value="Ngăn đá">🧊 Ngăn đá</option>
+            <option value="Kệ rau củ">🥕 Kệ rau củ</option>
+            <option value="Cánh cửa">🚪 Cánh cửa</option>
+            <option value="Tủ đồ khô">cabinet Tủ đồ khô</option>
+        </select>
+
+        <label for="expiration_date">Ngày hết hạn:</label>
+        <input type="date" id="expiration_date" name="expiration_date" required>
+
+        <input type="submit" value="Thêm vào Tủ lạnh">
+    </form>
+    
+    <div class="back-link">
+        <a href="{{ url_for('home') }}">⬅️ Quay lại trang chủ</a>
+    </div>
+
+    <script>
+        function updateQuantityInput() {
+            // 1. Lấy thẻ input số lượng và thẻ select đơn vị
+            var quantityInput = document.getElementById("quantity");
+            var unitSelect = document.getElementById("unit");
+            var hintText = document.getElementById("quantity-hint");
+            
+            // 2. Lấy giá trị đơn vị đang được chọn
+            var selectedUnit = unitSelect.value;
+
+            // 3. Danh sách các đơn vị chỉ dùng số nguyên (đếm được)
+            var integerUnits = ["Quả", "Hộp", "Cái", "Chai", "Gói"];
+
+            // 4. Kiểm tra và thay đổi thuộc tính của ô nhập
+            if (integerUnits.includes(selectedUnit)) {
+                // Nếu là đồ đếm được: Bắt buộc nhập số nguyên (step = 1)
+                quantityInput.min = "1";
+                quantityInput.step = "1";
+                quantityInput.placeholder = "VD: 1, 5, 10";
+                hintText.textContent = "Nhập số nguyên (1, 2, 3...)";
+                
+                // (Mẹo nhỏ) Nếu đang lỡ nhập 1.5 thì tự làm tròn xuống 1
+                if (quantityInput.value && quantityInput.value % 1 !== 0) {
+                     quantityInput.value = Math.floor(quantityInput.value);
+                }
+            } else {
+                // Nếu là Kg, Lít, Gram: Cho phép nhập số lẻ (step = 0.01)
+                quantityInput.min = "0.01";
+                quantityInput.step = "0.01"; // Cho phép nhập lẻ như 0.5, 1.25
+                quantityInput.placeholder = "VD: 0.5, 1.2";
+                hintText.textContent = "Có thể nhập số lẻ (0.5, 1.2...)";
+            } 
+        }
+
+        // Gọi hàm một lần ngay khi trang web tải xong để thiết lập trạng thái ban đầu
+        window.onload = updateQuantityInput;
+    </script>
+</body>
+</html>
