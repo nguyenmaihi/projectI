@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* CSS Hệ thống Tab & Card đồng bộ với Suggest.html */
+    .tab-container { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 2px solid #ddd; }
+    .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 1.1em; font-weight: bold; color: #666; transition: 0.3s; }
+    .tab-btn.active { color: var(--accent-color); border-bottom: 4px solid var(--accent-color); }
+    .tab-content { display: none; }
+    /* Hiển thị Tab Profile dạng căn giữa, Tab Favorites dạng Grid */
+    .tab-content.active#profile { display: block; }
+    .tab-content.active#favorites { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+    /* Card tài khoản nhỏ gọn */
+    .account-card { 
+        max-width: 360px; background: white; padding: 20px; 
+        border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0 auto; 
+    }
+    .info-group { 
+        background: #f8f9fa; padding: 10px 15px; border-radius: 8px; 
+        margin-bottom: 12px; border-left: 4px solid var(--accent-color); 
+    }
+    .info-group label { display: block; color: #7f8c8d; font-size: 0.75em; text-transform: uppercase; }
+    .info-group p { font-size: 1em; font-weight: bold; color: #2c3e50; margin: 0; }
+
+    /* Recipe Card đồng bộ */
+    .recipe-card { 
+        background: white; border-radius: 12px; padding: 20px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; 
+        cursor: pointer; border: 1px solid #eee; position: relative; 
+        display: flex; flex-direction: column; justify-content: space-between;
+        min-height: 180px;
+    }
+    .recipe-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    
+    /* Trái tim yêu thích */
+    .heart-btn { position: absolute; bottom: 15px; right: 15px; font-size: 1.5em; color: #e74c3c; transition: 0.2s; z-index: 10; cursor: pointer; }
+
+    /* Modal đồng bộ */
+    .recipe-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center; }
+    .recipe-modal-content { background: white; width: 90%; max-width: 550px; padding: 25px; border-radius: 15px; position: relative; max-height: 80vh; overflow-y: auto; }
+</style>
+
+<h1 style="margin-bottom: 20px;"><i class="fas fa-user-circle"></i> Quản lý tài khoản</h1>
+
+<div class="tab-container">
+    <div class="tab-btn active" onclick="switchTab(event, 'profile')">👤 Thông tin cá nhân</div>
+    <div class="tab-btn" onclick="switchTab(event, 'favorites')">❤️ Món ăn đã thích</div>
+</div>
+
+<div id="profile" class="tab-content active">
+    <div class="account-card">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <i class="fas fa-user-cog fa-3x" style="color: #bdc3c7;"></i>
+            <h3 style="margin: 5px 0;">{{ user.username }}</h3>
+        </div>
+        <div class="info-group">
+            <label>Email đăng ký</label>
+            <p>{{ user.email }}</p>
+        </div>
+        <form method="POST" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <p style="font-size: 0.85em; font-weight: bold; margin-bottom: 8px;">Đổi mật khẩu</p>
+            <input type="password" name="old_password" placeholder="Mật khẩu hiện tại" required 
+                   style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px;">
+            <input type="password" name="new_password" placeholder="Mật khẩu mới" required 
+                   style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px;">
+            <button type="submit" style="width: 100%; background: var(--accent-color); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Cập nhật bảo mật
+            </button>
+        </form>
+    </div>
+</div>
+
+<div id="favorites" class="tab-content">
+    {% for fav in favorites %}
+    <div class="recipe-card" 
+         data-name="{{ fav.recipe.name }}"
+         data-ingredients="{{ fav.recipe.ingredients_list }}"
+         data-instructions="{{ fav.recipe.instructions }}"
+         onclick="openRecipe(this)">
+        
+        <h3 style="margin-top: 0; padding-right: 30px;">{{ fav.recipe.name }}</h3>
+        <p style="color: #666; font-size: 0.9em;">Nguyên liệu: {{ fav.recipe.ingredients_list[:60] }}...</p>
+        
+        <div class="heart-btn" onclick="toggleHeart(event, this, '{{ fav.recipe.id }}')">
+            <i class="fas fa-heart"></i>
+        </div>
+        <span style="color: var(--accent-color); font-weight: bold; margin-top: 10px;">Xem công thức →</span>
+    </div>
+    {% else %}
+    <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">Bạn chưa thích món ăn nào.</p>
+    {% endfor %}
+</div>
+
+<div id="recipeModal" class="recipe-modal" onclick="closeRecipe()">
+    <div class="recipe-modal-content" onclick="event.stopPropagation()">
+        <span onclick="closeRecipe()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer;">&times;</span>
+        <h2 id="m-name" style="color: var(--primary-color); margin-top: 0;"></h2>
+        <hr>
+        <h4>🛒 Nguyên liệu cần có:</h4>
+        <p id="m-ingredients" style="line-height: 1.6; background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 0.9em;"></p>
+        <h4>📖 Hướng dẫn chế biến:</h4>
+        <p id="m-instructions" style="line-height: 1.6; white-space: pre-line; font-size: 0.9em;"></p>
+    </div>
+</div>
+
+<script>
+    // 1. Chuyển Tab
+    function switchTab(e, tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        e.currentTarget.classList.add('active');
+    }
+
+    // 2. Mở Modal lấy dữ liệu từ data-attributes
+    function openRecipe(element) {
+        const name = element.getAttribute('data-name');
+        const ingredients = element.getAttribute('data-ingredients');
+        const instructions = element.getAttribute('data-instructions');
+
+        document.getElementById('m-name').innerText = name;
+        document.getElementById('m-ingredients').innerText = ingredients;
+        document.getElementById('m-instructions').innerText = instructions;
+        document.getElementById('recipeModal').style.display = 'flex';
+    }
+
+    function closeRecipe() {
+        document.getElementById('recipeModal').style.display = 'none';
+    }
+
+    // 3. Xử lý Bỏ thích (Xóa card mượt mà)
+    function toggleHeart(event, element, recipeId) {
+        event.stopPropagation(); // Ngăn mở Modal khi bấm tim
+
+        fetch(`/toggle_favorite/${recipeId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'unhearted') {
+                    const card = element.parentElement;
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+                    card.style.transition = '0.3s';
+                    setTimeout(() => card.remove(), 300);
+                }
+            })
+            .catch(err => console.error("Lỗi:", err));
+    }
+</script>
+{% endblock %}
