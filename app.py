@@ -361,7 +361,11 @@ def account():
                 flash('Mật khẩu cũ không chính xác.', 'danger')
         return redirect(url_for('account'))
 
-    return render_template('auth/account.html', user=user)
+    # Lấy danh sách các món ăn mà user này đã nhấn yêu thích
+    # Chúng ta sử dụng join để lấy được thông tin chi tiết từ bảng Recipe
+    user_favorites = Favorite.query.filter_by(user_id=user.id).all()
+
+    return render_template('auth/account.html', user=user, favorites=user_favorites)
 
 if __name__ == '__main__':
     with app.app_context():
