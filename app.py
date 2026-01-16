@@ -311,35 +311,49 @@ def init_recipes():
         
         recipes = [
             Recipe(name="Trứng chiên hành lá", ingredients_list="Trứng gà, Hành lá, Nước mắm", 
-                   instructions="Đập trứng vào bát, thêm hành lá và mắm, đánh tan rồi chiên vàng."),
+                   instructions="1. Đập trứng vào bát.\n2. Thêm hành lá băm nhỏ và một chút nước mắm.\n3. Đánh tan trứng rồi chiên trên chảo nóng cho đến khi vàng đều."),
+            
             Recipe(name="Đậu phụ sốt cà chua", ingredients_list="Đậu phụ, Cà chua, Hành lá", 
-                   instructions="Rán vàng đậu phụ. Xào cà chua sệt lại rồi cho đậu vào rim 5 phút."),
+                   instructions="1. Thái đậu phụ thành khối vuông, rán vàng.\n2. Cà chua băm nhỏ, xào cho nhuyễn thành sốt.\n3. Cho đậu đã rán vào rim cùng sốt cà chua trong 5 phút."),
+            
             Recipe(name="Thịt lợn rang cháy cạnh", ingredients_list="Thịt lợn, Hành tím, Nước mắm", 
-                   instructions="Thái thịt mỏng, rang cho ra bớt mỡ rồi thêm hành tím và mắm rang khô."),
+                   instructions="1. Thái thịt mỏng.\n2. Rang thịt trên chảo cho đến khi ra bớt mỡ và cạnh hơi cháy vàng.\n3. Thêm hành tím băm và nước mắm, đảo đều cho thấm."),
+            
             Recipe(name="Rau muống xào tỏi", ingredients_list="Rau muống, Tỏi, Dầu ăn", 
-                   instructions="Rau muống luộc sơ. Phi thơm tỏi với dầu ăn rồi cho rau vào xào lửa lớn."),
+                   instructions="1. Rau muống luộc sơ qua nước sôi.\n2. Phi thơm tỏi băm với dầu ăn.\n3. Cho rau vào xào lửa lớn, nêm gia vị vừa ăn rồi tắt bếp."),
+            
             Recipe(name="Canh cà chua trứng", ingredients_list="Cà chua, Trứng gà, Hành lá", 
-                   instructions="Xào nhuyễn cà chua, thêm nước sôi. Đổ trứng đã đánh tan vào và rắc hành."),
+                   instructions="1. Xào nhuyễn cà chua với dầu ăn.\n2. Thêm nước sôi vào nồi.\n3. Đổ trứng đã đánh tan vào, khuấy nhẹ để tạo vân rồi thêm hành lá."),
+            
             Recipe(name="Sườn xào chua ngọt", ingredients_list="Sườn heo, Cà chua, Hành tây", 
-                   instructions="Sườn luộc sơ rồi rán vàng. Sốt cùng cà chua băm và hành tây thái múi."),
+                   instructions="1. Sườn luộc sơ rồi rán vàng cạnh.\n2. Pha hỗn hợp sốt cà chua, đường, giấm.\n3. Cho sườn và hành tây vào rim cùng sốt cho đến khi sền sệt."),
+            
             Recipe(name="Thịt kho tàu", ingredients_list="Thịt lợn, Trứng gà, Nước dừa", 
-                   instructions="Kho thịt lợn với trứng gà luộc và nước dừa cho đến khi thịt mềm."),
+                   instructions="1. Thịt lợn thái miếng to, ướp gia vị.\n2. Cho thịt và trứng đã luộc vào nồi nước dừa.\n3. Kho nhỏ lửa cho đến khi thịt mềm và nước có màu cánh gián."),
+            
             Recipe(name="Canh rau cải thịt băm", ingredients_list="Rau cải, Thịt lợn, Gừng", 
-                   instructions="Nấu thịt băm với nước và gừng đập dập, cho rau cải vào khi nước sôi."),
+                   instructions="1. Xào sơ thịt băm với hành tím.\n2. Thêm nước và vài lát gừng vào đun sôi.\n3. Cho rau cải vào nấu chín tới rồi nêm gia vị."),
+            
             Recipe(name="Gà kho gừng", ingredients_list="Thịt gà, Gừng, Hành tím", 
-                   instructions="Gà ướp gia vị, kho nhỏ lửa với gừng thái sợi cho đến khi săn chắc."),
+                   instructions="1. Gà chặt miếng vừa ăn, ướp gia vị.\n2. Gừng thái sợi, hành tím băm nhỏ.\n3. Kho gà với gừng và một ít nước màu cho đến khi thịt săn và thấm vị."),
+            
             Recipe(name="Bò xào cần tây", ingredients_list="Thịt bò, Cần tây, Hành tây", 
-                   instructions="Xào thịt bò chín tới, sau đó cho cần tây và hành tây vào đảo nhanh tay."),
+                   instructions="1. Thịt bò thái mỏng, ướp tỏi.\n2. Xào thịt bò chín tái rồi để riêng.\n3. Xào cần tây và hành tây chín tới, sau đó cho bò vào đảo nhanh tay."),
+            
             Recipe(name="Cá kho tộ", ingredients_list="Cá, Thịt lợn, Hành tím", 
-                   instructions="Kho cá với ít thịt ba chỉ và hành tím cho đến khi nước kho kẹo lại."),
+                   instructions="1. Cá cắt khúc, thịt ba chỉ thái nhỏ.\n2. Xếp cá và thịt vào tộ, thêm nước mắm và nước hàng.\n3. Kho cho đến khi nước cạn gần hết và cá chắc thịt."),
+            
             Recipe(name="Canh bí đỏ thịt băm", ingredients_list="Bí đỏ, Thịt lợn, Hành lá", 
-                   instructions="Hầm bí đỏ với thịt băm cho đến khi bí chín mềm, thêm hành lá."),
+                   instructions="1. Bí đỏ gọt vỏ, thái miếng vừa ăn.\n2. Nấu thịt băm với nước cho sôi.\n3. Cho bí đỏ vào hầm cho đến khi bí chín mềm."),
+            
             Recipe(name="Salad cà chua dưa chuột", ingredients_list="Cà chua, Dưa chuột, Xà lách", 
-                   instructions="Trộn cà chua, dưa chuột thái lát với xà lách và sốt dầu giấm."),
+                   instructions="1. Cà chua và dưa chuột thái lát mỏng.\n2. Trộn đều với xà lách.\n3. Thêm sốt dầu giấm và trộn nhẹ tay trước khi ăn."),
+            
             Recipe(name="Salad ức gà áp chảo", ingredients_list="Ức gà, Xà lách, Cà chua", 
-                   instructions="Ức gà áp chảo thái lát, ăn kèm xà lách, cà chua và sốt mè rang."),
+                   instructions="1. Ức gà ướp muối tiêu rồi áp chảo chín đều, thái lát.\n2. Sắp xếp xà lách và cà chua ra đĩa.\n3. Đặt thịt gà lên trên và thêm sốt mè rang."),
+            
             Recipe(name="Salad bơ trứng gà", ingredients_list="Bơ, Trứng gà, Xà lách", 
-                   instructions="Bơ và trứng luộc thái miếng, trộn nhẹ với xà lách và sốt mayonnaise.")
+                   instructions="1. Bơ thái miếng, trứng gà luộc chín thái múi cau.\n2. Trộn xà lách với sốt mayonnaise hoặc sữa chua.\n3. Trang trí bơ và trứng lên trên mặt salad.")
         ]
         
         db.session.add_all(recipes)
