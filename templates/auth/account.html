@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Tài khoản{% endblock %}
+
+{% block content %}
+<style>
+    /* Thu nhỏ khung lại còn 400px và căn giữa */
+    .account-mini-container {
+        max-width: 400px; 
+        margin: 0 auto;
+    }
+
+    .card-sm {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .info-box label {
+        display: block;
+        color: #7f8c8d;
+        font-size: 0.75em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .info-box p {
+        font-size: 1em;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .input-sm {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 0.9em;
+    }
+
+    .btn-update {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        font-weight: bold;
+        font-size: 0.9em;
+        transition: 0.2s;
+    }
+
+    .btn-update:hover {
+        background: var(--hover-color);
+    }
+</style>
+
+<div class="account-mini-container">
+    <h2 style="margin-bottom: 20px; text-align: center; font-size: 1.5em;">
+        <i class="fas fa-user-circle"></i> Hồ sơ cá nhân
+    </h2>
+
+    <div class="card-sm">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #2c3e50;">{{ user.username }}</h3>
+        </div>
+
+        <div class="info-box">
+            <label>Email</label>
+            <p>{{ user.email }}</p>
+        </div>
+
+        <form method="POST" style="margin-top: 20px;">
+            <p style="margin: 0 0 10px 0; font-size: 0.85em; font-weight: bold; color: #555;">Đổi mật khẩu</p>
+            <input type="password" name="old_password" class="input-sm" placeholder="Mật khẩu cũ" required>
+            <input type="password" name="new_password" class="input-sm" placeholder="Mật khẩu mới" required>
+            <button type="submit" class="btn-update">Cập nhật</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -6,23 +6,6 @@
     <title>Smart Fridge - Quản lý tủ lạnh</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-    /* Trạng thái mặc định của nav-item */
-.nav-item {
-    display: block;
-    padding: 15px 25px;
-    color: #bdc3c7;
-    text-decoration: none;
-    transition: 0.1s;
-    border-left: 4px solid transparent; /* Vạch màu mặc định là trong suốt */
-}
-
-/* Khi di chuột vào HOẶC khi có class .active */
-.nav-item:hover, .nav-item.active {
-    background-color: var(--hover-color);
-    color: white;
-    border-left: 4px solid var(--accent-color); /* Hiện vạch màu xanh dương */
-    padding-left: 20px;
-}
         :root {
             --sidebar-width: 260px;
             --primary-color: #2c3e50;
@@ -46,6 +29,7 @@
             position: fixed;
             display: flex;
             flex-direction: column;
+            z-index: 1000;
         }
 
         .sidebar-header {
@@ -75,13 +59,15 @@
             padding: 15px 25px;
             color: #bdc3c7;
             text-decoration: none;
-            transition: 0.3s;
+            transition: 0.1s;
+            border-left: 4px solid transparent;
         }
 
         .nav-item:hover, .nav-item.active {
             background-color: var(--hover-color);
             color: white;
             border-left: 4px solid var(--accent-color);
+            padding-left: 20px;
         }
 
         .nav-item i { margin-right: 10px; width: 20px; text-align: center; }
@@ -94,7 +80,41 @@
             min-height: 100vh;
         }
 
-        /* Responsive */
+        /* THÔNG BÁO FLASH */
+        .flash-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 320px;
+        }
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.4s ease-out;
+        }
+        .alert-success { background-color: #28a745; }
+        .alert-danger { background-color: #dc3545; }
+        .alert-info { background-color: #17a2b8; }
+        .alert-warning { background-color: #ffc107; color: #333; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .fade-out {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: 0.5s ease;
+        }
+
         @media (max-width: 768px) {
             .sidebar { width: 70px; }
             .sidebar span, .sidebar-header, .user-info { display: none; }
@@ -103,6 +123,19 @@
     </style>
 </head>
 <body>
+
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} flash-item">
+                        <span>{{ message }}</span>
+                        <span style="cursor:pointer; margin-left:10px;" onclick="this.parentElement.remove()">&times;</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <div class="sidebar">
         <div class="sidebar-header">
@@ -115,25 +148,26 @@
         </div>
 
         <nav class="nav-links">
-    <a href="{{ url_for('home') }}" 
-       class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
-        <i class="fas fa-home"></i> <span>Tủ lạnh của tôi</span>
-    </a>
+            <a href="{{ url_for('home') }}" 
+               class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+                <i class="fas fa-home"></i> <span>Tủ lạnh của tôi</span>
+            </a>
 
-    <a href="{{ url_for('suggest') }}" 
-       class="nav-item {% if request.endpoint == 'suggest' %}active{% endif %}">
-        <i class="fas fa-utensils"></i> <span>Món ăn hôm nay</span>
-    </a>
+            <a href="{{ url_for('suggest') }}" 
+               class="nav-item {% if request.endpoint == 'suggest' %}active{% endif %}">
+                <i class="fas fa-utensils"></i> <span>Món ăn hôm nay</span>
+            </a>
 
-    <a href="{{ url_for('statistics') }}" 
-    class="nav-item {% if request.endpoint == 'statistics' %}active{% endif %}">
-    <i class="fas fa-chart-pie"></i> <span>Thống kê</span>
-    </a>
+            <a href="{{ url_for('statistics') }}" 
+               class="nav-item {% if request.endpoint == 'statistics' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i> <span>Thống kê</span>
+            </a>
 
-    <a href="#" class="nav-item {% if request.endpoint == 'account' %}active{% endif %}">
-        <i class="fas fa-cog"></i> <span>Tài khoản</span>
-    </a>
-</nav>
+            <a href="{{ url_for('account') }}" 
+               class="nav-item {% if request.endpoint == 'account' %}active{% endif %}">
+                <i class="fas fa-cog"></i> <span>Tài khoản</span>
+            </a>
+        </nav>
 
         <a href="{{ url_for('logout') }}" class="nav-item" style="border-top: 1px solid #3e5062;">
             <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
@@ -145,5 +179,15 @@
         {% endblock %}
     </div>
 
+    <script>
+        // Tự động xóa thông báo sau 4 giây
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.flash-item');
+            alerts.forEach(alert => {
+                alert.classList.add('fade-out');
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 4000);
+    </script>
 </body>
 </html>

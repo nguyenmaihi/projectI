@@ -5,18 +5,37 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <h1 style="margin: 0;">🧊 Danh sách thực phẩm</h1>
-    <a href="{{ url_for('add_food') }}" style="background: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+    <button onclick="openAddModal()" style="background: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
         <i class="fas fa-plus"></i> Thêm thực phẩm
-    </a>
+    </button>
 </div>
 
 <style>
     .food-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .food-table th, .food-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
     .food-table th { background: #f2f2f2; font-weight: bold; color: #333; }
-    .btn-action { padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px; margin-right: 5px; }
+    .btn-action { padding: 6px 12px; border-radius: 4px; font-size: 13px; margin-right: 5px; border: none; cursor: pointer; display: inline-block; font-family: inherit; }
     .btn-edit { background: #ffc107; color: #000; }
-    .btn-delete { background: #dc3545; color: #fff; }
+    .btn-delete { background: #dc3545; color: #fff; text-decoration: none; }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+        z-index: 9999; justify-content: center; align-items: center;
+    }
+    .modal-content {
+        background: white; padding: 30px; border-radius: 12px; width: 420px;
+        position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        animation: animatetop 0.4s;
+    }
+    @keyframes animatetop { from {top: -300px; opacity: 0} to {top: 0; opacity: 1} }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
+    .form-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+    .hint { font-size: 0.8em; color: #666; font-style: italic; margin-top: 4px; display: block; }
+    .btn-submit { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
+    .close-modal { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #aaa; }
 </style>
 
 <table class="food-table">
@@ -60,7 +79,10 @@
                 <div style="font-size: 0.8em; color: #999;">({{ food.expiration_date.strftime('%d/%m/%Y') }})</div>
             </td>
             <td>
-                <a href="{{ url_for('edit_food', id=food.id) }}" class="btn-action btn-edit">Sửa</a>
+                <button class="btn-action btn-edit" 
+                        onclick="openEditModal('{{ food.id }}', '{{ food.name }}', '{{ food.quantity }}', '{{ food.unit }}', '{{ food.location }}', '{{ food.expiration_date }}')">
+                    Sửa
+                </button>
                 <a href="{{ url_for('delete_food', id=food.id) }}" class="btn-action btn-delete" 
                    onclick="return confirm('Bạn chắc chắn muốn xóa {{ food.name }}?');">Xóa</a>
             </td>
@@ -72,4 +94,110 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div id="foodModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle" style="margin-top: 0; color: #2c3e50;"></h2>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <form id="foodForm" method="POST">
+            <div class="form-group">
+                <label>Tên thực phẩm</label>
+                <input type="text" name="name" id="f-name" required class="form-input" placeholder="VD: Trứng gà, Sữa tươi...">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Số lượng</label>
+                    <input type="number" step="1" name="quantity" id="f-quantity" required class="form-input">
+                    <span id="quantity-hint" class="hint"></span>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Đơn vị</label>
+                    <select name="unit" id="f-unit" class="form-input" onchange="updateQuantityLogic()">
+                        <option value="Quả">Quả</option>
+                        <option value="Hộp">Hộp</option>
+                        <option value="Cái">Cái</option>
+                        <option value="Chai">Chai</option>
+                        <option value="Gói">Gói</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Lít">Lít</option>
+                        <option value="Gram">Gram</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Vị trí</label>
+                <select name="location" id="f-location" class="form-input">
+                    <option value="Ngăn mát">❄️ Ngăn mát</option>
+                    <option value="Ngăn đá">🧊 Ngăn đá</option>
+                    <option value="Kệ rau củ">🥕 Kệ rau củ</option>
+                    <option value="Cánh cửa">🚪 Cánh cửa</option>
+                    <option value="Tủ đồ khô">📦 Tủ đồ khô</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Ngày hết hạn</label>
+                <input type="date" name="expiration_date" id="f-date" required class="form-input">
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-submit"></button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('foodModal');
+    const fQuantity = document.getElementById("f-quantity");
+    const fUnit = document.getElementById("f-unit");
+    const fHint = document.getElementById("quantity-hint");
+
+    // LOGIC ĐƠN VỊ CỦA BẠN
+    function updateQuantityLogic() {
+        const integerUnits = ["Quả", "Hộp", "Cái", "Chai", "Gói"];
+        if (integerUnits.includes(fUnit.value)) {
+            fQuantity.step = "1";
+            fQuantity.min = "1";
+            fHint.textContent = "Nhập số nguyên (1, 2...)";
+            if (fQuantity.value && fQuantity.value % 1 !== 0) {
+                fQuantity.value = Math.floor(fQuantity.value);
+            }
+        } else {
+            fQuantity.step = "0.01";
+            fQuantity.min = "0.01";
+            fHint.textContent = "Có thể nhập số lẻ (0.5, 1.2...)";
+        }
+    }
+
+    function openAddModal() {
+        document.getElementById('foodForm').reset();
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Thêm vào Tủ lạnh 🍎';
+        document.getElementById('btnSubmit').innerHTML = 'Thêm vào Tủ lạnh';
+        document.getElementById('btnSubmit').style.background = '#28a745';
+        document.getElementById('foodForm').action = "{{ url_for('add_food') }}";
+        updateQuantityLogic();
+        modal.style.display = 'flex';
+    }
+
+    function openEditModal(id, name, qty, unit, loc, expDate) {
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa thực phẩm';
+        document.getElementById('btnSubmit').innerHTML = 'Lưu thay đổi';
+        document.getElementById('btnSubmit').style.background = '#3498db';
+        
+        document.getElementById('f-name').value = name;
+        document.getElementById('f-quantity').value = qty;
+        document.getElementById('f-unit').value = unit;
+        document.getElementById('f-location').value = loc;
+        document.getElementById('f-date').value = expDate;
+
+        document.getElementById('foodForm').action = "/edit_food/" + id;
+        updateQuantityLogic();
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() { modal.style.display = 'none'; }
+    window.onclick = function(event) { if (event.target == modal) closeModal(); }
+</script>
 {% endblock %}
