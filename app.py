@@ -3,13 +3,19 @@ from extensions import db, bcrypt
 from models import User, Food, Recipe, Favorite 
 from datetime import datetime, date
 from sqlalchemy import func
+import os
 
 app = Flask(__name__)
 
 # --- Cấu hình ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'chuoi-bi-mat-cua-ban' 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 db.init_app(app)
 bcrypt.init_app(app)
