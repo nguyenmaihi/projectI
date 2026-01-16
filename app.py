@@ -372,7 +372,11 @@ def account():
     user_favorites = Favorite.query.filter_by(user_id=user.id).all()
 
     return render_template('auth/account.html', user=user, favorites=user_favorites)
-with app.app_context():
+@app.route("/init_db")
+def init_db():
+    with app.app_context():
         db.create_all()
+    return "Database initialized!"
+
 if __name__ == '__main__':
     app.run(debug=True)
