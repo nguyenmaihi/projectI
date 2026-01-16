@@ -41,13 +41,16 @@ SMART FRIDGE/
 ---
 
 ### ⚙️ Hướng dẫn khởi chạy
-#### Cách 1: Clone dự án từ github
 1. `python -m venv venv`
 2. `venv\Scripts\activate`
 3. `pip install -r requirements.txt`
 4. `python app.py`
-##### Cách 2: trai nghiệm hệ thống tại
-[https://smart-fridge-1zrb.onrender.com/](url)
+
+---
+
+### 🌍 Truy cập ứng dụng
+Bạn có thể trải nghiệm trực tiếp dự án Smart Fridge tại địa chỉ:
+👉 **[Smart Fridge Live Demo](https://smart-fridge-1zrb.onrender.com/)**
 
 ---
 
